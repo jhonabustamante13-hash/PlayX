@@ -12,6 +12,18 @@ jobs:
         run: |
           if [ -f playx.zip ]; then mkdir -p _src && unzip -oq playx.zip -d _src; fi
           if [ -d _src/PlayX ]; then echo "PROJ=_src/PlayX" >> $GITHUB_ENV; else echo "PROJ=." >> $GITHUB_ENV; fi
+      - name: Icono personalizado
+        run: |
+          if [ -f icon.png ]; then
+            IM=$(command -v magick || command -v convert)
+            for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+              n=${d%%:*}; s=${d##*:}
+              mkdir -p $PROJ/app/src/main/res/mipmap-$n
+              $IM icon.png -resize ${s}x${s} $PROJ/app/src/main/res/mipmap-$n/ic_launcher.png
+            done
+            rm -f $PROJ/app/src/main/res/drawable/ic_launcher.xml
+            sed -i 's#@drawable/ic_launcher#@mipmap/ic_launcher#' $PROJ/app/src/main/AndroidManifest.xml
+          fi
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
